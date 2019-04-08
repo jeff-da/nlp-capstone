@@ -1,4 +1,5 @@
 # Jeff, Jack, Dan NLP Team
+# Team name: Facebook fucked up our wedding picture.
 
 ## 4/8. Blog post 1.
 
