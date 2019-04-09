@@ -7,7 +7,7 @@ date:   2019-04-08 18:58:37 -0700
 Facebook fucked up our wedding picture.
 
 ## Team Members
-Dan Tran, Jack Khuu, and Jeff Da
+Dan Tran, Jack Khuu, and Jeff Da.
 
 ## Project Ideas
 
