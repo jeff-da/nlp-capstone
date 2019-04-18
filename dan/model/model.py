@@ -49,29 +49,22 @@ class SentimentClassifier(Model):
 
         # CNN Portion
         self.vgg16 = models.vgg16(pretrained=True)
-        self.conv1 = nn.Conv2d(3, 64, 3)
-        self.conv2 = nn.Conv2d(64, 64, 3)
-        self.conv3 = nn.Conv2d(64, 128, 3)
-        self.conv4 = nn.Conv2d(128, 128, 3)
+        self.conv1 = nn.Conv2d(3, 32, 3)
+        self.conv2 = nn.Conv2d(32, 64, 3)
 
 
     def process_image(self, link: str) -> None:
-        img_path = link
-        img = load_img(img_path, target_size=(530, 700))
-        img_data = img_to_array(img)
-        img_data = numpy.expand_dims(img_data, axis=0)
-        img_data = self.vgg16(img_data)
+        img = map(load_img(_, target_size=(530, 700)), link)
+        img_data = map(img_to_array, img)
+        img_data = torch.tensor(numpy.array(map(numpy.expand_dims(_, axis=0), img_data)))
 
-        x = self.conv1(img_data)
-        x = self.conv2(x)
-        x = F.max_pool2d(x, (2, 2))
-        x = F.relu(self.conv3(x))
-        x = F.relu(self.conv4(x))
-        x = F.avg_pool2d(x, (19, 19))
+        x = F.max_pool2d(self.vgg16(img_data), (2, 2))
+        x = F.max_pool2d(F.relu(self.conv1(img_data)), (2, 2))
+        x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
 
         x = x.view(-1, self.num_flat_features(x))
 
-        # print(x.shape)
+        print(x.shape)
         return x
 
     def num_flat_features(self, x):
@@ -82,16 +75,16 @@ class SentimentClassifier(Model):
         return num_features
 
     def get_left_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
-        if 'directory' in metadata[0]: # training image
-            return "/home/jzda/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img0.png"
+        if 'directory' in metadata: # training image
+            return "/home/jzda/images/train/" + str(metadata['directory']) + "/" + metadata['identifier'][:-2] + "-img0.png"
         else: # dev image
-            return "/home/jzda/images/dev/" + metadata[0]['identifier'][:-2] + "-img0.png"
+            return "/home/jzda/images/dev/" + metadata['identifier'][:-2] + "-img0.png"
 
     def get_right_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
-        if 'directory' in metadata[0]: # training image
-            return "/home/jzda/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img1.png"
+        if 'directory' in metadata: # training image
+            return "/home/jzda/images/train/" + str(metadata['directory']) + "/" + metadata['identifier'][:-2] + "-img1.png"
         else: # dev image
-            return "/home/jzda/images/dev/" + metadata[0]['identifier'][:-2] + "-img1.png"
+            return "/home/jzda/images/dev/" + metadata['identifier'][:-2] + "-img1.png"
 
     @overrides
     def forward(self,  # type: ignore
@@ -99,25 +92,28 @@ class SentimentClassifier(Model):
                 metadata: Dict[str, torch.LongTensor],
                 label: torch.LongTensor = None) -> Dict[str, torch.Tensor]:
         # pylint: disable=arguments-differ
+
         # pictures (CNN)
-        left = self.get_left_link(metadata)
-        left_image_vector = self.process_image(left)
-        right = self.get_right_link(metadata)
-        right_image_vector = self.process_image(right)
+        left = map(self.get_left_link, metadata)
+        left_image_encoding = self.process_image(left)
+        right = map(self.get_right_link, metadata)
+        right_image_encoding = self.process_image(right)
+
         # language (RNN)
         embedded_tokens = self.text_field_embedder(tokens)
         tokens_mask = util.get_text_field_mask(tokens)
         encoded_tokens = self.abstract_encoder(embedded_tokens, tokens_mask)
+
         # combination + feedforward
-        encoded_tokens_array = encoded_tokens.detach().numpy()
-        concatenated_array = numpy.concatenate((left_image_vector[0], right_image_vector[0], encoded_tokens_array[0]), axis=None)
-        concatenated_vector = torch.from_numpy(numpy.reshape(concatenated_array, (1, -1)))
-        logits = self.classifier_feedforward(concatenated_vector.cpu())
+        concatenated_encoding = torch.cat((left_image_encoding, right_image_encoding, encoded_tokens), dim=1)
+        logits = self.classifier_feedforward(concatenated_encoding)
         output_dict = {'logits': logits}
+
         # result = F.softmax(logits) # debug
         # max = torch.argmax(result, dim=1) # debug
         # print(max)
         # print(tokens)
+
         if label is not None:
             loss = self.loss(logits, label)
             for metric in self.metrics.values():

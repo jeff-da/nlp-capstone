@@ -1,7 +1,7 @@
 {
 
-  "train_data_path": "/home/jzda/code/nlvr/nlvr/nlvr2/data/smalltrain.json",
-  "validation_data_path": "/home/jzda/code/nlvr/nlvr/nlvr2/data/smalltrain.json",
+  "train_data_path": "/home/jzda/nlvr/nlvr2/data/train.json",
+  "validation_data_path": "/home/jzda/nlvr/nlvr2/data/dev.json",
 
   "dataset_reader": {
     "type": "nlvr_reader",
@@ -29,16 +29,16 @@
       "type": "lstm",
       "bidirectional": true,
       "input_size": 100,
-      "hidden_size": 16384,
-      "num_layers": 4,
+      "hidden_size": 100,
+      "num_layers": 2,
       "dropout": 0.2
     },
     "classifier_feedforward": {
-      "input_dim": 92672,
-      "num_layers": 11,
-      "hidden_dims": [46336, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2],
-      "activations": ["sigmoid", "relu", "relu", "relu", "relu", "relu", "relu", "relu", "relu", "relu", "relu"],
-      "dropout": [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.0]
+      "input_dim": 200,
+      "num_layers": 2,
+      "hidden_dims": [100, 2],
+      "activations": ["relu", "none"],
+      "dropout": [0.2, 0.0]
     }
   },
 
@@ -48,7 +48,7 @@
   },
 
   "trainer": {
-    "num_epochs": 15,
+    "num_epochs": 5,
     "cuda_device": -1,
     "grad_clipping": 5.0,
     "validation_metric": "+accuracy",
