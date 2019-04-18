@@ -54,9 +54,9 @@ class SentimentClassifier(Model):
 
 
     def process_image(self, link: str) -> None:
-        img = map(load_img(_, target_size=(530, 700)), link)
+        img = map(lambda x: load_img(x, target_size=(530, 700)), link)
         img_data = map(img_to_array, img)
-        img_data = torch.tensor(numpy.array(map(numpy.expand_dims(_, axis=0), img_data)))
+        img_data = torch.tensor(numpy.array(map(lambda x: numpy.expand_dims(x, axis=0), img_data)))
 
         x = F.max_pool2d(self.vgg16(img_data), (2, 2))
         x = F.max_pool2d(F.relu(self.conv1(img_data)), (2, 2))

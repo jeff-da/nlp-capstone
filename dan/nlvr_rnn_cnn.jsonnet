@@ -37,7 +37,7 @@
       "input_dim": 200,
       "num_layers": 2,
       "hidden_dims": [100, 2],
-      "activations": ["relu", "none"],
+      "activations": ["relu", "linear"],
       "dropout": [0.2, 0.0]
     }
   },
