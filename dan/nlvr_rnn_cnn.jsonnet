@@ -44,7 +44,7 @@
 
   "iterator": {
     "type": "basic",
-    "batch_size": 1
+    "batch_size": 32
   },
 
   "trainer": {

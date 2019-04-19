@@ -56,8 +56,8 @@ class SentimentClassifier(Model):
 
 
     def process_image(self, link: str) -> None:
-        img = load_img(link, target_size=(200, 200))
-        img_data = torch.tensor(numpy.expand_dims(img_to_array(img), axis=0))
+        img = map(lambda x: load_img(x, target_size=(200, 200)), link)
+        img_data = torch.tensor(list(map(img_to_array, img))).permute(0, 3, 1, 2)
 
         #print(img_data.shape)
 
@@ -79,7 +79,6 @@ class SentimentClassifier(Model):
             num_features *= s
         return num_features
 
-    """
     def get_left_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
         if 'directory' in metadata: # training image
             return "/home/jzda/images/train/" + str(metadata['directory']) + "/" + metadata['identifier'][:-2] + "-img0.png"
@@ -91,19 +90,6 @@ class SentimentClassifier(Model):
             return "/home/jzda/images/train/" + str(metadata['directory']) + "/" + metadata['identifier'][:-2] + "-img1.png"
         else: # dev image
             return "/home/jzda/images/dev/" + metadata['identifier'][:-2] + "-img1.png"
-    """
-
-    def get_left_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
-        if 'directory' in metadata[0]: # training image
-            return "/home/jzda/nlvr2/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img0.png"
-        else: # dev image
-            return "/home/jzda/nlvr2/dev/" + metadata[0]['identifier'][:-2] + "-img0.png"
-
-    def get_right_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
-        if 'directory' in metadata[0]: # training image
-            return "/home/jzda/nlvr2/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img1.png"
-        else: # dev image
-            return "/home/jzda/nlvr2/dev/" + metadata[0]['identifier'][:-2] + "-img1.png"
 
     @overrides
     def forward(self,  # type: ignore
@@ -113,14 +99,9 @@ class SentimentClassifier(Model):
         # pylint: disable=arguments-differ
 
         # pictures (CNN)
-        #left = map(self.get_left_link, metadata)
-        #left_image_encoding = self.process_image(left)
-        #right = map(self.get_right_link, metadata)
-        #right_image_encoding = self.process_image(right)
-
-        left = self.get_left_link(metadata)
+        left = map(self.get_left_link, metadata)
         left_image_encoding = self.process_image(left)
-        right = self.get_right_link(metadata)
+        right = map(self.get_right_link, metadata)
         right_image_encoding = self.process_image(right)
 
         # language (RNN)
