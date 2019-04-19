@@ -34,7 +34,7 @@
       "dropout": 0.2
     },
     "classifier_feedforward": {
-      "input_dim": 200,
+      "input_dim": 1224,
       "num_layers": 2,
       "hidden_dims": [100, 2],
       "activations": ["relu", "linear"],
@@ -49,7 +49,6 @@
 
   "trainer": {
     "num_epochs": 5,
-    "cuda_device": -1,
     "grad_clipping": 5.0,
     "validation_metric": "+accuracy",
     "optimizer": {

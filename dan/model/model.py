@@ -48,23 +48,28 @@ class SentimentClassifier(Model):
         initializer(self)
 
         # CNN Portion
-        self.vgg16 = models.vgg16(pretrained=True)
-        self.conv1 = nn.Conv2d(3, 32, 3)
-        self.conv2 = nn.Conv2d(32, 64, 3)
+        #self.vgg16 = models.vgg16(pretrained=True)
+        self.conv1 = nn.Conv2d(3, 8, 3)
+        self.conv2 = nn.Conv2d(8, 16, 3)
+        self.conv3 = nn.Conv2d(16, 24, 3)
+        self.conv4 = nn.Conv2d(24, 32, 3)
 
 
     def process_image(self, link: str) -> None:
-        img = map(lambda x: load_img(x, target_size=(530, 700)), link)
-        img_data = map(img_to_array, img)
-        img_data = torch.tensor(numpy.array(map(lambda x: numpy.expand_dims(x, axis=0), img_data)))
+        img = load_img(link, target_size=(200, 200))
+        img_data = torch.tensor(numpy.expand_dims(img_to_array(img), axis=0))
 
-        x = F.max_pool2d(self.vgg16(img_data), (2, 2))
-        x = F.max_pool2d(F.relu(self.conv1(img_data)), (2, 2))
+        #print(img_data.shape)
+
+        #x = F.max_pool2d(self.vgg16(img_data), (2, 2))
+        x = F.max_pool2d(F.relu(self.conv1(img_data)), (4, 4))
         x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
+        x = F.max_pool2d(F.relu(self.conv3(x)), (2, 2))
+        x = F.max_pool2d(F.relu(self.conv4(x)), (2, 2))
 
         x = x.view(-1, self.num_flat_features(x))
 
-        print(x.shape)
+        #print(x.shape)
         return x
 
     def num_flat_features(self, x):
@@ -74,6 +79,7 @@ class SentimentClassifier(Model):
             num_features *= s
         return num_features
 
+    """
     def get_left_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
         if 'directory' in metadata: # training image
             return "/home/jzda/images/train/" + str(metadata['directory']) + "/" + metadata['identifier'][:-2] + "-img0.png"
@@ -85,6 +91,19 @@ class SentimentClassifier(Model):
             return "/home/jzda/images/train/" + str(metadata['directory']) + "/" + metadata['identifier'][:-2] + "-img1.png"
         else: # dev image
             return "/home/jzda/images/dev/" + metadata['identifier'][:-2] + "-img1.png"
+    """
+
+    def get_left_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
+        if 'directory' in metadata[0]: # training image
+            return "/home/jzda/nlvr2/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img0.png"
+        else: # dev image
+            return "/home/jzda/nlvr2/dev/" + metadata[0]['identifier'][:-2] + "-img0.png"
+
+    def get_right_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
+        if 'directory' in metadata[0]: # training image
+            return "/home/jzda/nlvr2/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img1.png"
+        else: # dev image
+            return "/home/jzda/nlvr2/dev/" + metadata[0]['identifier'][:-2] + "-img1.png"
 
     @overrides
     def forward(self,  # type: ignore
@@ -94,9 +113,14 @@ class SentimentClassifier(Model):
         # pylint: disable=arguments-differ
 
         # pictures (CNN)
-        left = map(self.get_left_link, metadata)
+        #left = map(self.get_left_link, metadata)
+        #left_image_encoding = self.process_image(left)
+        #right = map(self.get_right_link, metadata)
+        #right_image_encoding = self.process_image(right)
+
+        left = self.get_left_link(metadata)
         left_image_encoding = self.process_image(left)
-        right = map(self.get_right_link, metadata)
+        right = self.get_right_link(metadata)
         right_image_encoding = self.process_image(right)
 
         # language (RNN)
