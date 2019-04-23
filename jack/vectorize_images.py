@@ -2,8 +2,6 @@
 
 This will vectorize a directory of images using resnet50 and save them in npy files
 
-Make an empty output directory called OUTPUT_FOLDER to save the output
-
 Provide the path to the top level directory of the source image (For our case it will be train/ dev/ ...)
 (There should be subdirectories that contain the images)
 
@@ -12,20 +10,23 @@ Provide the path to the top level directory of the source image (For our case it
 import sys
 import os
 import numpy as np
+import h5py
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 from keras.applications.resnet50 import preprocess_input
 
 # Directory to save output
-OUTPUT_FOLDER = "out/"
+OUTPUT_FOLDER = "out"
 
 def main():
+	os.mkdir(OUTPUT_FOLDER)
 	directory = sys.argv[1]
+	# with h5py.File('name-of-file.h5', 'w') as hf:
 	for root, dirs, _ in os.walk(directory):
 		for subdir in dirs:
 			subdir_path = os.path.join(root, subdir)
-			output_path = OUTPUT_FOLDER + str(subdir)
+			output_path = OUTPUT_FOLDER + "/"+ str(subdir)
 			os.mkdir(output_path)
-
+			# grp = hf.create_group(str(subdir))
 			for _, _, files in os.walk(subdir_path):
 				for image in files:
 					output_file = output_path + "/" + str(image) + ".npz"
@@ -34,9 +35,11 @@ def main():
 				
 					# Save the np array
 					np.savez_compressed(output_file, a=img_data)
-					
+
+					# grp.create_dataset(str(image), data=img_data)		
 					# Load the np array
-					# loaded = np.load(output_file)['a']
+					loaded = np.load(output_file)["a"]
+						
 
 def process_image(link: str):
 	img = load_img(link, target_size=(530, 700))
