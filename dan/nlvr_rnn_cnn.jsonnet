@@ -29,12 +29,12 @@
       "type": "lstm",
       "bidirectional": true,
       "input_size": 100,
-      "hidden_size": 100,
+      "hidden_size": 250,
       "num_layers": 2,
       "dropout": 0.2
     },
     "classifier_feedforward": {
-      "input_dim": 1224,
+      "input_dim": 2500,
       "num_layers": 2,
       "hidden_dims": [100, 2],
       "activations": ["relu", "linear"],
@@ -53,6 +53,8 @@
     "validation_metric": "+accuracy",
     "optimizer": {
       "type": "adagrad"
-    }
+    },
+    "cuda_device": 0,
+    "num_serialized_models_to_keep":2
   }
 }

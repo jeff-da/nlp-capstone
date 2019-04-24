@@ -48,26 +48,26 @@ class SentimentClassifier(Model):
         initializer(self)
 
         # CNN Portion
-        #self.vgg16 = models.vgg16(pretrained=True)
-        self.conv1 = nn.Conv2d(3, 8, 3)
-        self.conv2 = nn.Conv2d(8, 16, 3)
-        self.conv3 = nn.Conv2d(16, 24, 3)
-        self.conv4 = nn.Conv2d(24, 32, 3)
+        self.vgg16 = models.vgg16(pretrained=True)
+        #self.conv1 = nn.Conv2d(3, 8, 3)
+        #self.conv2 = nn.Conv2d(8, 16, 3)
+        #self.conv3 = nn.Conv2d(16, 24, 3)
+        #self.conv4 = nn.Conv2d(24, 32, 3)
 
 
     def process_image(self, link: str) -> None:
         img = map(lambda x: load_img(x, target_size=(200, 200)), link)
-        img_data = torch.tensor(list(map(img_to_array, img))).permute(0, 3, 1, 2)
+        img_data = torch.tensor(list(map(img_to_array, img))).permute(0, 3, 1, 2).cuda()
 
         #print(img_data.shape)
 
-        #x = F.max_pool2d(self.vgg16(img_data), (2, 2))
-        x = F.max_pool2d(F.relu(self.conv1(img_data)), (4, 4))
-        x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
-        x = F.max_pool2d(F.relu(self.conv3(x)), (2, 2))
-        x = F.max_pool2d(F.relu(self.conv4(x)), (2, 2))
+        x = self.vgg16(img_data)
+        #x = F.max_pool2d(F.relu(self.conv1(img_data)), (4, 4))
+        #x = F.max_pool2d(F.relu(self.conv2(x)), (2, 2))
+        #x = F.max_pool2d(F.relu(self.conv3(x)), (2, 2))
+        #x = F.max_pool2d(F.relu(self.conv4(x)), (2, 2))
 
-        x = x.view(-1, self.num_flat_features(x))
+        #x = x.view(-1, self.num_flat_features(x))
 
         #print(x.shape)
         return x
