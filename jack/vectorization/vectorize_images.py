@@ -46,6 +46,7 @@ def process_image(link: str):
 	img_data = img_to_array(img)
 	img_data = np.expand_dims(img_data, axis=0)
 	img_data = preprocess_input(img_data)
+	print(str(img_data))
 	return img_data
 
 if __name__ == '__main__':
