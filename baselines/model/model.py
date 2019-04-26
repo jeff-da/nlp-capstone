@@ -85,15 +85,15 @@ class SentimentClassifier(Model):
 
     def get_left_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
         if 'directory' in metadata[0]: # training image
-            return "/home/jzda/nlvr2/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img0.png"
+            return "/home/jzda/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img0.png"
         else: # dev image
-            return "/home/jzda/nlvr2/dev/" + metadata[0]['identifier'][:-2] + "-img0.png"
+            return "/home/jzda/images/dev/" + metadata[0]['identifier'][:-2] + "-img0.png"
 
     def get_right_link(self, metadata: Dict[str, torch.LongTensor]) -> str:
         if 'directory' in metadata[0]: # training image
-            return "/home/jzda/nlvr2/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img1.png"
+            return "/home/jzda/images/train/" + str(metadata[0]['directory']) + "/" + metadata[0]['identifier'][:-2] + "-img1.png"
         else: # dev image
-            return "/home/jzda/nlvr2/dev/" + metadata[0]['identifier'][:-2] + "-img1.png"
+            return "/home/jzda/images/dev/" + metadata[0]['identifier'][:-2] + "-img1.png"
 
     @overrides
     def forward(self,  # type: ignore

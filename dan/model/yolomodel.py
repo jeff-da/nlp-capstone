@@ -190,12 +190,12 @@ class SentimentClassifier(Model):
         initializer(self)
 
         self.net = load_net("/home/jzda/nlp-capstone/dan/darknet/cfg/yolov3.cfg".encode(), "/home/jzda/nlp-capstone/dan/darknet/yolov3.weights".encode(), 0)
-        self.meta = load_meta("/home/jzda/nlp-capstone/dan/darknet/cfg/coco.cfg".encode())
+        self.meta = load_meta("/home/jzda/nlp-capstone/dan/darknet/cfg/coco.data".encode())
 
 
     def process_image(self, link: str) -> None:
 
-        reslist = list(map(lambda x: detect(self.net, self.meta, x), link))
+        reslist = list(map(lambda x: detect(self.net, self.meta, x.encode()), link))
         print(reslist)
 
         return reslist
